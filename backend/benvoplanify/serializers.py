@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
-from .models import Benevole, Message, CRENEAUX, JOURS
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import Annonce, Benevole, Message, CRENEAUX, JOURS
 
 User = get_user_model()
 
@@ -15,10 +16,25 @@ class BenevoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'nom', 'prenom']
 
 
+class JetonSerializer(TokenObtainPairSerializer):
+    """Ajoute le rôle au jeton JWT pour que le frontend adapte la navigation."""
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['is_staff'] = user.is_staff
+        return token
+
+
 class ProfilSerializer(serializers.ModelSerializer):
+    is_coordinateur = serializers.BooleanField(source='user.is_staff', read_only=True)
+    messages_non_lus = serializers.SerializerMethodField()
+
     class Meta:
         model = Benevole
-        fields = ['id', 'nom', 'prenom', 'email', 'date_naiss']
+        fields = ['id', 'nom', 'prenom', 'email', 'date_naiss', 'is_coordinateur', 'messages_non_lus']
+
+    def get_messages_non_lus(self, benevole):
+        return Message.objects.filter(receiver=benevole.user, is_read=False).count()
 
     def validate_email(self, email):
         if User.objects.filter(email=email).exclude(pk=self.instance.user_id).exists():
@@ -67,14 +83,49 @@ class IndisponibiliteSerializer(serializers.Serializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender_email = serializers.EmailField(source='sender.email', read_only=True)
+    sender_nom = serializers.SerializerMethodField()
     receiver_email = serializers.EmailField(source='receiver.email', read_only=True)
+    receiver_nom = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = ['id', 'sender_email', 'receiver', 'receiver_email', 'content', 'timestamp', 'is_read']
-        read_only_fields = ['timestamp', 'is_read']
+        fields = ['id', 'sender', 'sender_email', 'sender_nom', 'receiver', 'receiver_email',
+                  'receiver_nom', 'content', 'timestamp', 'is_read']
+        read_only_fields = ['sender', 'timestamp', 'is_read']
+
+    def get_sender_nom(self, message):
+        return f"{message.sender.prenom} {message.sender.nom}"
+
+    def get_receiver_nom(self, message):
+        return f"{message.receiver.prenom} {message.receiver.nom}"
 
     def validate_receiver(self, receiver):
         if receiver == self.context['request'].user:
             raise serializers.ValidationError("Vous ne pouvez pas vous envoyer un message")
         return receiver
+
+
+class AnnonceSerializer(serializers.ModelSerializer):
+    auteur_nom = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Annonce
+        fields = ['id', 'titre', 'contenu', 'date', 'auteur_nom']
+        read_only_fields = ['date']
+
+    def get_auteur_nom(self, annonce):
+        return f"{annonce.auteur.prenom} {annonce.auteur.nom}" if annonce.auteur else "Coordination"
+
+
+class ChangerMotDePasseSerializer(serializers.Serializer):
+    ancien = serializers.CharField(write_only=True)
+    nouveau = serializers.CharField(write_only=True)
+
+    def validate_ancien(self, ancien):
+        if not self.context['request'].user.check_password(ancien):
+            raise serializers.ValidationError("Mot de passe actuel incorrect")
+        return ancien
+
+    def validate_nouveau(self, nouveau):
+        validate_password(nouveau, self.context['request'].user)
+        return nouveau

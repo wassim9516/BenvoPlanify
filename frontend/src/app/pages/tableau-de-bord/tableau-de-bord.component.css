@@ -1,0 +1,102 @@
+.kpis {
+  margin-bottom: 20px;
+}
+
+.kpi > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.kpi .kpi-label,
+.kpi .kpi-value,
+.resume .kpi-label,
+.resume .kpi-value {
+  display: block;
+}
+
+.stack-xs .progress {
+  margin-top: 8px;
+}
+
+.kpi-link {
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.kpi-link:hover {
+  text-decoration: none;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.layout {
+  grid-template-columns: 1.4fr 1fr;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.creneaux,
+.annonces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.creneaux li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.creneaux li:last-child {
+  border-bottom: none;
+}
+
+.date-chip {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.date-chip strong {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.date-chip span {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.creneau-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.annonces li {
+  padding: 12px 0 12px 14px;
+  border-left: 3px solid var(--accent);
+  margin-bottom: 12px;
+}
+
+.annonces p {
+  margin: 4px 0;
+  font-size: 0.92rem;
+  white-space: pre-line;
+}

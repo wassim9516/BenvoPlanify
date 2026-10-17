@@ -1,45 +1,46 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { switchMap } from 'rxjs';
+import { IconComponent } from '../../components/icon.component';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { Inscription, messagesErreur } from '../../models';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
-  imports: [CommonModule, FormsModule, RouterLink]
+  imports: [FormsModule, RouterLink, IconComponent]
 })
 export class RegisterComponent {
-  formFields = [
-    { name: 'email', label: 'Email', type: 'email', value: '' },
-    { name: 'nom', label: 'Nom', type: 'text', value: '' },
-    { name: 'prenom', label: 'Prénom', type: 'text', value: '' },
-    { name: 'date_naiss', label: 'Date de naissance', type: 'date', value: '' },
-    { name: 'password', label: 'Mot de passe', type: 'password', value: '' },
-    { name: 'password2', label: 'Confirmer le mot de passe', type: 'password', value: '' }
-  ];
+  data: Inscription = { email: '', nom: '', prenom: '', date_naiss: '', password: '', password2: '' };
   messages: string[] = [];
   enCours = false;
 
-  constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private auth: AuthService,
+    private toast: ToastService,
+    private router: Router,
+  ) {}
 
   onSubmit() {
-    const data = Object.fromEntries(this.formFields.map(f => [f.name, f.value])) as unknown as Inscription;
-    if (data.password !== data.password2) {
+    if (this.data.password !== this.data.password2) {
       this.messages = ['Les mots de passe ne correspondent pas'];
       return;
     }
 
     this.messages = [];
     this.enCours = true;
-    this.api.register(data).pipe(
-      switchMap(() => this.auth.login(data.email, data.password))
+    this.api.register(this.data).pipe(
+      switchMap(() => this.auth.login(this.data.email, this.data.password))
     ).subscribe({
-      next: () => this.router.navigate(['/espace-perso']),
+      next: () => {
+        this.toast.success('Bienvenue sur Benvoplanify !');
+        this.router.navigate(['/disponibilites']);
+      },
       error: err => {
         this.enCours = false;
         this.messages = messagesErreur(err);

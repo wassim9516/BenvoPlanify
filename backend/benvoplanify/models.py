@@ -44,7 +44,12 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        return self.create_user(email, password, **extra_fields)
+        user = self.create_user(email, password, **extra_fields)
+        # Un coordinateur utilise aussi l'espace bénévole : il lui faut un profil
+        Benevole.objects.create(
+            user=user, nom=user.nom, prenom=user.prenom, email=user.email, date_naiss=user.date_naiss,
+        )
+        return user
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -95,3 +100,21 @@ class EmploiDuTemps(models.Model):
 
     def __str__(self):
         return f"{self.benevole} - {self.get_jour_display()} {self.get_creneau_display()}"
+
+
+class Annonce(models.Model):
+    auteur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='annonces'
+    )
+    titre = models.CharField(max_length=200)
+    contenu = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return self.titre

@@ -1,23 +1,136 @@
-<div class="banner">
-  <div class="navbar">
-    <ul>
-      <li><a routerLink="/espace-perso">Espace Personnel</a></li>
-      <li><a routerLink="/login">Login</a></li>
-      <li><a routerLink="/register">S'inscrire</a></li>
-    </ul>
+<header class="nav">
+  <div class="container nav-inner">
+    <a routerLink="/" class="brand">
+      <span class="brand-mark"><app-icon name="heart" [size]="18" /></span>
+      Benvoplanify
+    </a>
+    <nav class="row">
+      @if (auth.isLoggedIn()) {
+        <a routerLink="/tableau-de-bord" class="btn btn-primary">Mon espace <app-icon name="arrow" [size]="16" /></a>
+      } @else {
+        <a routerLink="/login" class="btn btn-ghost">Se connecter</a>
+        <a routerLink="/register" class="btn btn-primary">Créer un compte</a>
+      }
+    </nav>
   </div>
+</header>
 
-  <div class="content">
-    <h1>Bienvenue sur <span class="orange"><br>Benvoplanify</span></h1>
-    <div>
-      <br><br><br>
-      <button *ngIf="auth.isLoggedIn()" class="btn login" routerLink="/espace-perso">Mon espace</button>
-      <ng-container *ngIf="!auth.isLoggedIn()">
-        <button class="btn login" routerLink="/login">Login</button>
-        <button class="btn register" routerLink="/register">S'inscrire</button>
-      </ng-container>
-      <p>Organisez votre semaine facilement et efficacement.</p>
-      <p *ngIf="nbBenevoles !== null">Nombre de bénévoles actifs : {{ nbBenevoles }}</p>
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <span class="badge badge-primary"><app-icon name="sparkles" [size]="14" /> Planification automatique</span>
+      <h1>Le planning de vos bénévoles, <span class="gradient">sans prise de tête.</span></h1>
+      <p class="lead">
+        Benvoplanify répartit automatiquement les créneaux de la semaine selon les disponibilités
+        de chacun. Moins de tableurs, plus de temps pour l’essentiel.
+      </p>
+      <div class="row">
+        @if (auth.isLoggedIn()) {
+          <a routerLink="/tableau-de-bord" class="btn btn-primary btn-lg">Accéder à mon espace <app-icon name="arrow" [size]="18" /></a>
+        } @else {
+          <a routerLink="/register" class="btn btn-primary btn-lg">Commencer gratuitement <app-icon name="arrow" [size]="18" /></a>
+          <a routerLink="/login" class="btn btn-secondary btn-lg">J’ai déjà un compte</a>
+        }
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="mock card">
+        <div class="mock-header">
+          <strong>Planning de la semaine</strong>
+          <span class="badge badge-success">87 % couvert</span>
+        </div>
+        <div class="mock-grid">
+          <span></span>
+          @for (jour of apercuJours; track jour) {
+            <span class="mock-day">{{ jour }}</span>
+          }
+          @for (ligne of apercu; track $index; let i = $index) {
+            <span class="mock-day">{{ apercuCreneaux[i] }}</span>
+            @for (n of ligne; track $index) {
+              <span class="mock-cell" [attr.data-n]="n">{{ n }}/3</span>
+            }
+          }
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</section>
+
+<section class="stats">
+  <div class="container stats-inner">
+    <div>
+      <strong>{{ nbBenevoles() ?? '—' }}</strong>
+      <span>bénévoles inscrits</span>
+    </div>
+    <div>
+      <strong>35</strong>
+      <span>créneaux par semaine</span>
+    </div>
+    <div>
+      <strong>20h</strong>
+      <span>maximum par bénévole</span>
+    </div>
+    <div>
+      <strong>2 min</strong>
+      <span>pour saisir ses disponibilités</span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Tout ce qu’il faut pour coordonner une équipe</h2>
+      <p class="muted">Une plateforme simple, pensée pour les associations.</p>
+    </div>
+    <div class="grid grid-4">
+      @for (f of fonctionnalites; track f.titre) {
+        <div class="card feature">
+          <span class="kpi-icon"><app-icon [name]="f.icone" /></span>
+          <h3>{{ f.titre }}</h3>
+          <p class="muted">{{ f.texte }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container">
+    <div class="section-title">
+      <h2>Comment ça marche ?</h2>
+    </div>
+    <ol class="steps">
+      @for (e of etapes; track e.titre; let i = $index) {
+        <li class="card">
+          <span class="step-num">{{ i + 1 }}</span>
+          <h3>{{ e.titre }}</h3>
+          <p class="muted">{{ e.texte }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta">
+      <div>
+        <h2>Prêt à rejoindre l’équipe ?</h2>
+        <p>Créez votre compte et recevez votre premier planning dès aujourd’hui.</p>
+      </div>
+      <a [routerLink]="auth.isLoggedIn() ? '/tableau-de-bord' : '/register'" class="btn btn-lg cta-btn">
+        {{ auth.isLoggedIn() ? 'Mon espace' : 'Créer mon compte' }} <app-icon name="arrow" [size]="18" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container row">
+    <span class="brand small"><span class="brand-mark"><app-icon name="heart" [size]="14" /></span> Benvoplanify</span>
+    <span class="spacer"></span>
+    <span class="muted small">© {{ annee }} Benvoplanify — Projet L2</span>
+  </div>
+</footer>

@@ -1,25 +1,74 @@
-<div class="banner">
-    <div class="navbar">
+<div class="auth-page">
+  <aside class="auth-brand">
+    <a routerLink="/" class="brand">
+      <span class="brand-mark"><app-icon name="heart" [size]="18" /></span>
+      Benvoplanify
+    </a>
+    <div>
+      <h2>Rejoignez l’équipe de bénévoles</h2>
       <ul>
-        <li><a routerLink="/">Accueil</a></li>
-        <li><a routerLink="/login">Se connecter</a></li>
+        <li><app-icon name="check" /> Inscription gratuite en 1 minute</li>
+        <li><app-icon name="check" /> Planning généré automatiquement</li>
+        <li><app-icon name="check" /> Jusqu’à 20h par semaine, à votre rythme</li>
       </ul>
     </div>
-    <div class="content">
-      <h2>Inscription</h2>
-      <ul *ngIf="messages.length">
-        <li *ngFor="let message of messages">{{ message }}</li>
-      </ul>
-      <form (ngSubmit)="onSubmit()">
-        <div *ngFor="let field of formFields">
-          <label [for]="field.name">{{ field.label }}</label>
-          <input [type]="field.type" [id]="field.name" [(ngModel)]="field.value" [name]="field.name" required />
+    <span class="small">© Benvoplanify</span>
+  </aside>
+
+  <main class="auth-main">
+    <div class="auth-card">
+      <h1>Créer un compte</h1>
+      <p class="lead">Quelques informations pour commencer.</p>
+
+      @if (messages.length) {
+        <div class="alert alert-danger" role="alert">
+          <app-icon name="alert" />
+          <div>
+            @for (message of messages; track message) {
+              <div>{{ message }}</div>
+            }
+          </div>
         </div>
-        <button type="submit" [disabled]="enCours"><span></span>S'inscrire</button>
+      }
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <div class="field">
+            <label for="prenom">Prénom</label>
+            <input id="prenom" name="prenom" [(ngModel)]="data.prenom" autocomplete="given-name" required />
+          </div>
+          <div class="field">
+            <label for="nom">Nom</label>
+            <input id="nom" name="nom" [(ngModel)]="data.nom" autocomplete="family-name" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Adresse email</label>
+          <input id="email" name="email" type="email" [(ngModel)]="data.email" placeholder="vous@exemple.fr" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="date_naiss">Date de naissance</label>
+          <input id="date_naiss" name="date_naiss" type="date" [(ngModel)]="data.date_naiss" required />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="password">Mot de passe</label>
+            <input id="password" name="password" type="password" [(ngModel)]="data.password" autocomplete="new-password" required />
+          </div>
+          <div class="field">
+            <label for="password2">Confirmation</label>
+            <input id="password2" name="password2" type="password" [(ngModel)]="data.password2" autocomplete="new-password" required />
+          </div>
+        </div>
+        <p class="field-hint">8 caractères minimum, pas uniquement des chiffres.</p>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="enCours">
+          {{ enCours ? 'Création du compte…' : 'Créer mon compte' }}
+        </button>
       </form>
-      <div class="login-link">
-        <p>Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
-        <p><a routerLink="/">Retour à l'accueil</a></p>
-      </div>
+
+      <p class="auth-switch">
+        Déjà un compte ? <a routerLink="/login">Se connecter</a>
+      </p>
     </div>
-  </div>
+  </main>
+</div>

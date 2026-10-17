@@ -3,20 +3,20 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 
-import { EspacePersoComponent } from './espace-perso.component';
+import { ShellComponent } from './shell.component';
 
-describe('EspacePersoComponent', () => {
-  let component: EspacePersoComponent;
-  let fixture: ComponentFixture<EspacePersoComponent>;
+describe('ShellComponent', () => {
+  let component: ShellComponent;
+  let fixture: ComponentFixture<ShellComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EspacePersoComponent],
+      imports: [ShellComponent],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EspacePersoComponent);
+    fixture = TestBed.createComponent(ShellComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

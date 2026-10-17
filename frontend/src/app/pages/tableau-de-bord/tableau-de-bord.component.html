@@ -1,0 +1,139 @@
+<div class="page-header">
+  <div>
+    <h1>{{ salutation }}{{ profil() ? ', ' + profil()!.prenom : '' }} 👋</h1>
+    <p>Voici un aperçu de votre semaine de bénévolat.</p>
+  </div>
+  <div class="row">
+    <a routerLink="/disponibilites" class="btn btn-secondary"><app-icon name="clock" [size]="16" /> Mes disponibilités</a>
+    <a routerLink="/planning" class="btn btn-primary"><app-icon name="calendar" [size]="16" /> Voir le planning</a>
+  </div>
+</div>
+
+@if (erreur()) {
+  <div class="alert alert-danger"><app-icon name="alert" /> {{ erreur() }}</div>
+}
+
+@if (data(); as d) {
+  <div class="grid grid-4 kpis">
+    <div class="card kpi">
+      <span class="kpi-icon"><app-icon name="clock" /></span>
+      <div class="stack-xs">
+        <span class="kpi-label">Heures cette semaine</span>
+        <span class="kpi-value">{{ d.heures }}h <small>/ {{ d.heures_objectif }}h</small></span>
+        <div class="progress"><span [style.width.%]="progression()"></span></div>
+      </div>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-icon accent"><app-icon name="calendar" /></span>
+      <div>
+        <span class="kpi-label">Créneaux attribués</span>
+        <span class="kpi-value">{{ d.mes_creneaux.length }}</span>
+      </div>
+    </div>
+    <a routerLink="/messagerie" class="card kpi kpi-link">
+      <span class="kpi-icon warning"><app-icon name="mail" /></span>
+      <div>
+        <span class="kpi-label">Messages non lus</span>
+        <span class="kpi-value">{{ d.messages_non_lus }}</span>
+      </div>
+    </a>
+    <div class="card kpi">
+      <span class="kpi-icon success"><app-icon name="chart" /></span>
+      <div class="stack-xs">
+        <span class="kpi-label">Remplissage du planning</span>
+        <span class="kpi-value">{{ d.couverture.taux_remplissage }} %</span>
+        <div class="progress accent"><span [style.width.%]="d.couverture.taux_remplissage"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid layout">
+    <section class="card">
+      <div class="card-header">
+        <h2>Mes prochains créneaux</h2>
+        <a routerLink="/planning" class="small">Tout voir</a>
+      </div>
+
+      @if (prochains().length) {
+        <ul class="creneaux">
+          @for (c of prochains(); track c.jour + '-' + c.creneau) {
+            <li>
+              <span class="date-chip">
+                <strong>{{ libelleJour(c.jour).slice(0, 3) }}</strong>
+                <span>{{ c.creneau }}h</span>
+              </span>
+              <div class="creneau-info">
+                <strong>{{ quand(c) }}</strong>
+                <span class="muted small">{{ libelleCreneau(c.creneau) }} · 2 heures</span>
+              </div>
+              @if (quand(c) === "Aujourd'hui") {
+                <span class="badge badge-primary">Aujourd'hui</span>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="empty">
+          <app-icon name="calendar" [size]="36" />
+          <p>Aucun créneau attribué pour le moment.</p>
+          <a routerLink="/disponibilites" class="btn btn-primary btn-sm">Renseigner mes disponibilités</a>
+        </div>
+      }
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Annonces</h2>
+        <app-icon name="megaphone" class="muted" />
+      </div>
+
+      @if (d.annonces.length) {
+        <ul class="annonces">
+          @for (a of d.annonces; track a.id) {
+            <li>
+              <strong>{{ a.titre }}</strong>
+              <p>{{ a.contenu }}</p>
+              <span class="muted small">{{ a.auteur_nom }} · {{ a.date | date:'d MMM yyyy' }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="empty">
+          <app-icon name="megaphone" [size]="36" />
+          <p>Aucune annonce de la coordination.</p>
+        </div>
+      }
+    </section>
+  </div>
+
+  <section class="card resume">
+    <div class="card-header">
+      <h2>L’équipe cette semaine</h2>
+    </div>
+    <div class="grid grid-4">
+      <div>
+        <span class="kpi-label">Bénévoles inscrits</span>
+        <span class="kpi-value">{{ d.nb_benevoles }}</span>
+      </div>
+      <div>
+        <span class="kpi-label">Créneaux couverts</span>
+        <span class="kpi-value">{{ d.couverture.creneaux_couverts }} <small>/ {{ d.couverture.creneaux_total }}</small></span>
+      </div>
+      <div>
+        <span class="kpi-label">Créneaux complets</span>
+        <span class="kpi-value">{{ d.couverture.creneaux_complets }}</span>
+      </div>
+      <div>
+        <span class="kpi-label">Places occupées</span>
+        <span class="kpi-value">{{ d.couverture.places_prises }} <small>/ {{ d.couverture.places_total }}</small></span>
+      </div>
+    </div>
+  </section>
+} @else if (!erreur()) {
+  <div class="grid grid-4 kpis">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="card"><div class="skeleton" style="height: 64px"></div></div>
+    }
+  </div>
+  <div class="card"><div class="skeleton" style="height: 220px"></div></div>
+}

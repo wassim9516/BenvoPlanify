@@ -27,15 +27,24 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
+    const payload = this.payload();
+    return !!payload && payload.exp * 1000 > Date.now();
+  }
+
+  /** Rôle lu dans le jeton ; le backend revérifie les droits à chaque appel. */
+  isCoordinateur(): boolean {
+    return this.isLoggedIn() && !!this.payload()?.is_staff;
+  }
+
+  private payload(): { exp: number; is_staff?: boolean } | null {
     const token = this.token;
     if (!token) {
-      return false;
+      return null;
     }
     try {
-      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      return payload.exp * 1000 > Date.now();
+      return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     } catch {
-      return false;
+      return null;
     }
   }
 }

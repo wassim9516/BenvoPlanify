@@ -2,19 +2,24 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, get_user_model, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from .models import Benevole, JOURS, CRENEAUX, Indisponibilite, Message
+from django.db.models import Count
+from .models import Annonce, Benevole, JOURS, CRENEAUX, EmploiDuTemps, Indisponibilite, Message
 from .forms import BenevoleForm, CustomUserRegistrationForm, CustomAuthenticationForm, MessageForm
-from .planning import CRENEAUX_IDS, JOURS_IDS, construire_emploi_du_temps, enregistrer_indisponibilites_et_generer
+from .planning import (
+    CRENEAUX_IDS, HEURES_MAX_SEMAINE, HEURES_PAR_CRENEAU, JOURS_IDS, construire_emploi_du_temps,
+    enregistrer_indisponibilites_et_generer, occupation_par_creneau, statistiques_couverture,
+)
 from django.contrib import messages
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import (
-    BenevoleSerializer, IndisponibiliteSerializer, MessageSerializer,
-    ProfilSerializer, RegisterSerializer,
+    AnnonceSerializer, BenevoleSerializer, ChangerMotDePasseSerializer, IndisponibiliteSerializer,
+    JetonSerializer, MessageSerializer, ProfilSerializer, RegisterSerializer,
 )
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 User = get_user_model()
 
@@ -195,8 +200,13 @@ class EspacePersoAPIView(APIView):
 
 class MessageListAPIView(APIView):
     def get(self, request):
-        recus = Message.objects.filter(receiver=request.user).select_related('sender', 'receiver').order_by('-timestamp')
-        return Response(MessageSerializer(recus, many=True).data)
+        """?boite=envoyes pour les messages envoyés, sinon les messages reçus."""
+        if request.query_params.get('boite') == 'envoyes':
+            messages_ = Message.objects.filter(sender=request.user)
+        else:
+            messages_ = Message.objects.filter(receiver=request.user)
+        messages_ = messages_.select_related('sender', 'receiver').order_by('-timestamp')
+        return Response(MessageSerializer(messages_, many=True).data)
 
     def post(self, request):
         serializer = MessageSerializer(data=request.data, context={'request': request})
@@ -212,3 +222,77 @@ class MessageDetailAPIView(APIView):
             message.is_read = True
             message.save(update_fields=['is_read'])
         return Response(MessageSerializer(message).data)
+
+
+class JetonAPIView(TokenObtainPairView):
+    serializer_class = JetonSerializer
+
+
+class TableauDeBordAPIView(APIView):
+    def get(self, request):
+        benevole = get_object_or_404(Benevole, user=request.user)
+        mes_creneaux = EmploiDuTemps.objects.filter(benevole=benevole).order_by('jour', 'creneau')
+        return Response({
+            'mes_creneaux': [{'jour': a.jour, 'creneau': a.creneau} for a in mes_creneaux],
+            'heures': mes_creneaux.count() * HEURES_PAR_CRENEAU,
+            'heures_objectif': HEURES_MAX_SEMAINE,
+            'nb_indisponibilites': Indisponibilite.objects.filter(benevole=benevole).count(),
+            'messages_non_lus': Message.objects.filter(receiver=request.user, is_read=False).count(),
+            'nb_benevoles': Benevole.objects.count(),
+            'couverture': statistiques_couverture(),
+            'annonces': AnnonceSerializer(Annonce.objects.select_related('auteur')[:3], many=True).data,
+        })
+
+
+class CoordinationAPIView(APIView):
+    """Vue d'ensemble réservée aux coordinateurs (comptes is_staff)."""
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        benevoles = (
+            Benevole.objects
+            .annotate(nb_creneaux=Count('emploidutemps', distinct=True),
+                      nb_indispo=Count('indisponibilite', distinct=True))
+            .order_by('nom', 'prenom')
+        )
+        occupation = occupation_par_creneau()
+        return Response({
+            'benevoles': [{
+                'id': b.id, 'nom': b.nom, 'prenom': b.prenom, 'email': b.email,
+                'heures': b.nb_creneaux * HEURES_PAR_CRENEAU, 'nb_indisponibilites': b.nb_indispo,
+            } for b in benevoles],
+            'occupation': {j: {c: occupation.get((j, c), 0) for c in CRENEAUX_IDS} for j in JOURS_IDS},
+            'couverture': statistiques_couverture(),
+            'heures_objectif': HEURES_MAX_SEMAINE,
+        })
+
+
+class AnnonceListAPIView(APIView):
+    def get(self, request):
+        annonces = Annonce.objects.select_related('auteur')[:20]
+        return Response(AnnonceSerializer(annonces, many=True).data)
+
+    def post(self, request):
+        if not request.user.is_staff:
+            return Response({'detail': "Réservé aux coordinateurs"}, status=status.HTTP_403_FORBIDDEN)
+        serializer = AnnonceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(auteur=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AnnonceDetailAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def delete(self, request, annonce_id):
+        get_object_or_404(Annonce, id=annonce_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChangerMotDePasseAPIView(APIView):
+    def post(self, request):
+        serializer = ChangerMotDePasseSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data['nouveau'])
+        request.user.save(update_fields=['password'])
+        return Response({'message': 'Mot de passe modifié'})

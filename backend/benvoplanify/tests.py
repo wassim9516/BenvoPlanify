@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from .models import Benevole, EmploiDuTemps, Indisponibilite, Message
+from .models import Annonce, Benevole, EmploiDuTemps, Indisponibilite, Message
 from .planning import enregistrer_indisponibilites_et_generer
 
 User = get_user_model()
@@ -173,3 +173,83 @@ class ApiTests(APITestCase):
         self.client.get(reverse('api-message-detail', args=[recu.id]))
         recu.refresh_from_db()
         self.assertTrue(recu.is_read)
+
+
+class ApiFonctionnalitesTests(APITestCase):
+    def setUp(self):
+        self.user, self.benevole = creer_benevole('vol@test.fr', nom='Martin', prenom='Léa')
+        self.coord, _ = creer_benevole('coord@test.fr', nom='Durand', prenom='Paul')
+        self.coord.is_staff = True
+        self.coord.save()
+
+    def authentifier(self, email):
+        response = self.client.post(reverse('api_token'), {'email': email, 'password': MOT_DE_PASSE})
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['access']}")
+        return response
+
+    def test_jeton_contient_le_role(self):
+        import base64, json
+        access = self.authentifier('coord@test.fr').data['access']
+        payload = access.split('.')[1]
+        payload += '=' * (-len(payload) % 4)
+        self.assertTrue(json.loads(base64.urlsafe_b64decode(payload))['is_staff'])
+
+    def test_tableau_de_bord(self):
+        enregistrer_indisponibilites_et_generer(self.benevole, [])
+        Message.objects.create(sender=self.coord, receiver=self.user, content='Bienvenue')
+        Annonce.objects.create(auteur=self.coord, titre='Réunion', contenu='Lundi 18h')
+        self.authentifier('vol@test.fr')
+        data = self.client.get(reverse('api-tableau-de-bord')).data
+        self.assertEqual(data['heures'], 20)
+        self.assertEqual(len(data['mes_creneaux']), 10)
+        self.assertEqual(data['messages_non_lus'], 1)
+        self.assertEqual(data['couverture']['places_prises'], 10)
+        self.assertEqual(data['annonces'][0]['titre'], 'Réunion')
+
+    def test_coordination_reservee_aux_coordinateurs(self):
+        self.authentifier('vol@test.fr')
+        self.assertEqual(self.client.get(reverse('api-coordination')).status_code, 403)
+        self.authentifier('coord@test.fr')
+        data = self.client.get(reverse('api-coordination')).data
+        self.assertEqual(len(data['benevoles']), 2)
+        self.assertEqual(data['occupation'][0][8], 0)
+
+    def test_annonces(self):
+        self.authentifier('vol@test.fr')
+        response = self.client.post(reverse('api-annonces'), {'titre': 'X', 'contenu': 'Y'})
+        self.assertEqual(response.status_code, 403)
+
+        self.authentifier('coord@test.fr')
+        response = self.client.post(reverse('api-annonces'), {'titre': 'Collecte', 'contenu': 'Samedi'})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['auteur_nom'], 'Paul Durand')
+        annonce_id = response.data['id']
+        self.assertEqual(len(self.client.get(reverse('api-annonces')).data), 1)
+        self.assertEqual(self.client.delete(reverse('api-annonce-detail', args=[annonce_id])).status_code, 204)
+
+    def test_messages_envoyes(self):
+        Message.objects.create(sender=self.user, receiver=self.coord, content='Question')
+        self.authentifier('vol@test.fr')
+        data = self.client.get(reverse('api-messages'), {'boite': 'envoyes'}).data
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['receiver_nom'], 'Paul Durand')
+        self.assertEqual(self.client.get(reverse('api-messages')).data, [])
+
+    def test_changer_mot_de_passe(self):
+        self.authentifier('vol@test.fr')
+        url = reverse('api-mot-de-passe')
+        self.assertEqual(self.client.post(url, {'ancien': 'faux', 'nouveau': 'Nouveau!2025x'}).status_code, 400)
+        self.assertEqual(self.client.post(url, {'ancien': MOT_DE_PASSE, 'nouveau': '123'}).status_code, 400)
+        self.assertEqual(self.client.post(url, {'ancien': MOT_DE_PASSE, 'nouveau': 'Nouveau!2025x'}).status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('Nouveau!2025x'))
+
+
+class SuperUtilisateurTests(TestCase):
+    def test_createsuperuser_cree_un_profil_benevole(self):
+        user = User.objects.create_superuser(
+            email='admin@test.fr', password=MOT_DE_PASSE, nom='Admin', prenom='Chef',
+            date_naiss=datetime.date(1990, 1, 1),
+        )
+        self.assertTrue(user.is_staff)
+        self.assertTrue(Benevole.objects.filter(user=user).exists())

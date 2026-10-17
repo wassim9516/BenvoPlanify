@@ -1,180 +1,155 @@
-/* Styles for the messagerie component */
+.messagerie {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  padding: 0;
+  min-height: 560px;
+  overflow: hidden;
+}
 
-.banner {
-    width: 100%;
-    min-height: 100vh;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('/assets/image/letter.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
+/* ---------------------------------------------------------------- liste */
+
+.liste {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  max-height: 72vh;
+  overflow-y: auto;
+}
+
+.liste-header {
+  position: sticky;
+  top: 0;
+  padding: 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--surface-2);
+}
+
+.item.active {
+  background: var(--primary-soft);
+}
+
+.item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.item-top strong {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item.unread .item-top strong {
+  font-weight: 700;
+}
+
+.apercu {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item.unread .apercu {
+  color: var(--text);
+}
+
+.dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* ---------------------------------------------------------------- détail */
+
+.detail {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-header h2 {
+  margin: 0;
+}
+
+.retour {
+  display: none;
+  margin-bottom: 10px;
+}
+
+.contenu {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.placeholder {
+  margin: auto;
+}
+
+.redaction {
+  max-width: 640px;
+}
+
+/* ---------------------------------------------------------------- mobile */
+
+@media (max-width: 860px) {
+  .messagerie {
+    grid-template-columns: 1fr;
   }
-  
-  .navbar {
-    width: 85%;
-    margin: auto;
-    padding: 35px 0;
+
+  .liste {
+    border-right: none;
+    max-height: none;
+  }
+
+  .detail {
+    display: none;
+  }
+
+  .detail-ouvert .liste {
+    display: none;
+  }
+
+  .detail-ouvert .detail {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  
-  .navbar ul li {
-    list-style: none;
-    display: inline-block;
-    margin: 0 20px;
-    position: relative;
-  }
-  
-  .navbar ul li a {
-    text-decoration: none;
-    color: #fff;
-    text-transform: uppercase;
-  }
-  
-  .navbar ul li::after {
-    content: '';
-    height: 3px;
-    width: 0;
-    background: #009688;
-    position: absolute;
-    left: 0;
-    bottom: -10px;
-    transition: 0.5s;
-  }
-  
-  .navbar ul li:hover::after {
-    width: 100%;
-  }
-  
-  .content {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    color: white;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .content h2 {
-    font-size: 2rem;
-    margin-bottom: 30px;
-    animation: fadeIn 1s ease-in-out;
-    animation-delay: 0.5s;
-    animation-fill-mode: both;
-  }
-  
-  .messages {
-    margin-bottom: 20px;
-    text-align: left;
-  }
-  
-  .message {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  
-  textarea {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    outline: none;
-    margin-top: 5px;
-    font-size: 1rem;
-    resize: none;
-  }
-  
-  button[type="submit"] {
-    width: 100%;
-    padding: 12px;
-    background-color: transparent;
-    color: #fff;
-    font-weight: bold;
-    border: 2px solid #009688;
-    border-radius: 25px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 20px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  button[type="submit"] span {
-    background: #009688;
-    height: 100%;
-    width: 0;
-    border-radius: 25px;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    z-index: -1;
-    transition: 0.5s;
-  }
-  
-  button[type="submit"]:hover span {
-    width: 100%;
-  }
-  
-  button[type="submit"]:hover {
-    border: none;
+    padding: 20px;
   }
 
-  /* La liste peut être longue : le bloc défile au lieu d'être centré en absolu */
-  .content {
-    position: static;
-    transform: none;
-    margin: 20px auto 40px;
+  .retour {
+    display: inline-flex;
   }
-
-  .message {
-    cursor: pointer;
-  }
-
-  .message.unread {
-    font-weight: bold;
-    border-left: 4px solid #009688;
-  }
-
-  .message.detail {
-    cursor: default;
-    background: rgba(0, 150, 136, 0.35);
-    text-align: left;
-    margin-bottom: 20px;
-  }
-
-  .message.detail .texte {
-    white-space: pre-wrap;
-    margin: 10px 0;
-  }
-
-  .message.detail a {
-    color: #fff;
-  }
-
-  .info {
-    color: #80cbc4;
-  }
-
-  select {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-size: 1rem;
-  }
-
-  button[type="submit"]:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+}

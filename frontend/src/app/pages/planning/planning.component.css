@@ -1,234 +1,134 @@
-/* Styles for the planning component */
+.planning-card {
+  padding: 18px;
+}
 
-.banner {
-    width: 100%;
-    min-height: 100vh;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('/assets/image/track.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
-  }
-  
-  .navbar {
-    width: 85%;
-    margin: auto;
-    padding: 35px 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-  
-  .navbar ul li {
-    list-style: none;
-    display: inline-block;
-    margin: 0 20px;
-    position: relative;
-  }
-  
-  .navbar ul li a {
-    text-decoration: none;
-    color: #fff;
-    text-transform: uppercase;
-  }
-  
-  .navbar ul li::after {
-    content: '';
-    height: 3px;
-    width: 0;
-    background: #009688;
-    position: absolute;
-    left: 0;
-    bottom: -10px;
-    transition: 0.5s;
-  }
-  
-  .navbar ul li:hover::after {
-    width: 100%;
-  }
-  
-  .content {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    color: white;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .content h2 {
-    font-size: 2rem;
-    margin-bottom: 30px;
-    animation: fadeIn 1s ease-in-out;
-    animation-delay: 0.5s;
-    animation-fill-mode: both;
-  }
-  
-  form p {
-    margin-bottom: 15px;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-  }
-  
-  input[type="text"],
-  input[type="email"],
-  input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    outline: none;
-    margin-top: 5px;
-    font-size: 1rem;
-  }
-  
-  button[type="submit"] {
-    width: 100%;
-    padding: 12px;
-    background-color: transparent;
-    color: #fff;
-    font-weight: bold;
-    border: 2px solid #009688;
-    border-radius: 25px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 20px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  button[type="submit"] span {
-    background: #009688;
-    height: 100%;
-    width: 0;
-    border-radius: 25px;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    z-index: -1;
-    transition: 0.5s;
-  }
-  
-  button[type="submit"]:hover span {
-    width: 100%;
-  }
-  
-  button[type="submit"]:hover {
-    border: none;
-  }
-  
-  .back-link {
-    margin-top: 15px;
-    text-align: center;
-  }
-  
-  .back-link a {
-    color: #fff;
-    font-weight: bold;
-    text-decoration: underline;
-  }
-  
-  .back-link a:hover {
-    color: #d0d0ff;
-  }
+.legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
 
-  /* Le formulaire est haut : le bloc défile au lieu d'être centré en absolu */
-  .content {
-    max-width: 1100px;
-    position: static;
-    transform: none;
-    margin: 20px auto 40px;
-  }
+.legende span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 
-  .jour {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-    text-align: left;
-  }
+.pastille {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
 
-  .toute-journee {
-    color: #80cbc4;
-  }
+.pastille.vide { background: var(--surface-2); border: 1px dashed var(--border); }
+.pastille.partiel { background: var(--warning-soft); border: 1px solid var(--warning); }
+.pastille.complet { background: var(--success-soft); border: 1px solid var(--success); }
+.pastille.moi { background: var(--primary); }
 
-  .creneaux {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 20px;
-  }
+.planning {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: separate;
+  border-spacing: 6px;
+  table-layout: fixed;
+}
 
-  .creneaux label {
-    font-weight: normal;
-    margin: 0;
-  }
+.planning th {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px;
+  text-align: center;
+}
 
-  .resultat {
-    margin-top: 25px;
-    text-align: left;
-  }
+.planning thead th.today {
+  color: var(--primary);
+}
 
-  .resultat ul {
-    margin: 10px 0 10px 20px;
-  }
+.col-heure {
+  width: 92px;
+  text-align: right !important;
+  white-space: nowrap;
+}
 
-  .resultat a {
-    color: #fff;
-  }
+.planning td {
+  vertical-align: top;
+  padding: 0;
+  height: 96px;
+}
 
-  .erreur {
-    color: #ff8a80;
-  }
+.planning td.today .slot {
+  outline: 1px solid var(--primary-soft);
+}
 
-  .table-container {
-    overflow-x: auto;
-  }
+.cell-skeleton {
+  height: 100%;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+.slot {
+  height: 100%;
+  min-height: 96px;
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+}
 
-  th, td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px;
-    vertical-align: top;
-  }
+.slot.vide {
+  border: 1px dashed var(--border);
+  background: transparent;
+}
 
-  th {
-    background: #009688;
-  }
+.slot.partiel {
+  background: var(--warning-soft);
+}
 
-  td ul {
-    list-style: none;
-    padding: 0;
-  }
+.slot.complet {
+  background: var(--success-soft);
+}
 
-  td li {
-    background: rgba(0, 150, 136, 0.4);
-    border-radius: 5px;
-    margin: 3px 0;
-    padding: 3px 6px;
-    font-size: 0.9rem;
-  }
+.slot.moi {
+  border: 2px solid var(--primary);
+}
 
-  td li.moi {
-    background: #009688;
-    font-weight: bold;
-  }
+.count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
 
-  .vide {
-    font-style: italic;
-    opacity: 0.6;
-  }
+.person {
+  font-size: 0.78rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person.me {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  font-weight: 600;
+}
+
+/* Vue "mes créneaux" */
+.slot.moi:not(.vide):not(.partiel):not(.complet) {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  justify-content: center;
+}
+
+.slot.moi:not(.vide):not(.partiel):not(.complet) span {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}

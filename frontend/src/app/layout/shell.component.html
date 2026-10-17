@@ -1,0 +1,68 @@
+<div class="shell" [class.menu-ouvert]="menuOuvert()">
+  <aside class="sidebar">
+    <a routerLink="/tableau-de-bord" class="brand">
+      <span class="brand-mark"><app-icon name="heart" [size]="18" /></span>
+      Benvoplanify
+    </a>
+
+    <nav class="nav">
+      <span class="nav-section">Espace bénévole</span>
+      @for (item of liens; track item.lien) {
+        <a [routerLink]="item.lien" routerLinkActive="active" class="nav-link">
+          <app-icon [name]="item.icone" />
+          <span>{{ item.libelle }}</span>
+          @if (item.lien === '/messagerie' && profil()?.messages_non_lus) {
+            <span class="nav-badge">{{ profil()!.messages_non_lus }}</span>
+          }
+        </a>
+      }
+
+      @if (auth.isCoordinateur()) {
+        <span class="nav-section">Administration</span>
+        <a routerLink="/coordination" routerLinkActive="active" class="nav-link">
+          <app-icon name="shield" />
+          <span>Coordination</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user">
+        <span class="avatar">{{ initiales() }}</span>
+        <div class="user-info">
+          <strong>{{ nomComplet() }}</strong>
+          <span>{{ auth.isCoordinateur() ? 'Coordinateur' : 'Bénévole' }}</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-icon" (click)="logout()" title="Se déconnecter" aria-label="Se déconnecter">
+        <app-icon name="logout" />
+      </button>
+    </div>
+  </aside>
+
+  <div class="overlay" (click)="menuOuvert.set(false)"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="btn btn-ghost btn-icon burger" (click)="menuOuvert.set(true)" aria-label="Ouvrir le menu">
+        <app-icon name="menu" />
+      </button>
+      <a routerLink="/tableau-de-bord" class="brand topbar-brand">
+        <span class="brand-mark"><app-icon name="heart" [size]="16" /></span>
+        Benvoplanify
+      </a>
+      <span class="spacer"></span>
+      <a routerLink="/messagerie" class="btn btn-ghost btn-icon notif" aria-label="Messagerie">
+        <app-icon name="mail" />
+        @if (profil()?.messages_non_lus) {
+          <span class="dot"></span>
+        }
+      </a>
+      <a routerLink="/profil" class="avatar" title="Mon profil">{{ initiales() }}</a>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

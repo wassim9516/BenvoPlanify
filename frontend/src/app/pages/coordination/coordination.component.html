@@ -1,0 +1,169 @@
+<div class="page-header">
+  <div>
+    <h1>Coordination</h1>
+    <p>Suivez la couverture du planning et l’engagement des bénévoles.</p>
+  </div>
+  <span class="badge badge-primary"><app-icon name="shield" [size]="12" /> Espace coordinateur</span>
+</div>
+
+@if (data(); as d) {
+  <div class="grid grid-4 kpis">
+    <div class="card kpi">
+      <span class="kpi-icon"><app-icon name="users" /></span>
+      <div>
+        <span class="kpi-label">Bénévoles</span>
+        <span class="kpi-value">{{ d.benevoles.length }}</span>
+      </div>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-icon success"><app-icon name="chart" /></span>
+      <div class="flex1">
+        <span class="kpi-label">Taux de remplissage</span>
+        <span class="kpi-value">{{ d.couverture.taux_remplissage }} %</span>
+        <div class="progress accent"><span [style.width.%]="d.couverture.taux_remplissage"></span></div>
+      </div>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-icon accent"><app-icon name="check" /></span>
+      <div>
+        <span class="kpi-label">Créneaux complets</span>
+        <span class="kpi-value">{{ d.couverture.creneaux_complets }} <small>/ {{ d.couverture.creneaux_total }}</small></span>
+      </div>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-icon warning"><app-icon name="alert" /></span>
+      <div>
+        <span class="kpi-label">Créneaux sans bénévole</span>
+        <span class="kpi-value">{{ creneauxVides() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="card-header">
+      <h2>Carte de couverture</h2>
+      <span class="muted small">Nombre de bénévoles par créneau (max. {{ max }})</span>
+    </div>
+    <div class="table-wrap">
+      <table class="heatmap">
+        <thead>
+          <tr>
+            <th></th>
+            @for (jour of jours; track jour[0]) {
+              <th>{{ jour[1].slice(0, 3) }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (creneau of creneaux; track creneau[0]) {
+            <tr>
+              <th>{{ creneau[1] }}</th>
+              @for (jour of jours; track jour[0]) {
+                <td>
+                  <span class="heat" [attr.data-n]="occupation(jour[0], creneau[0])"
+                        [title]="jour[1] + ' ' + creneau[1] + ' : ' + occupation(jour[0], creneau[0]) + ' bénévole(s)'">
+                    {{ occupation(jour[0], creneau[0]) }}
+                  </span>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid layout">
+    <section class="card">
+      <div class="card-header">
+        <h2>Bénévoles</h2>
+        <label class="search">
+          <app-icon name="search" [size]="16" />
+          <input class="input" type="search" placeholder="Rechercher…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)" />
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Bénévole</th>
+              <th>Heures attribuées</th>
+              <th>Indispo.</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of benevolesFiltres(); track b.id) {
+              <tr>
+                <td>
+                  <div class="row nowrap">
+                    <span class="avatar">{{ initiales(b.prenom + ' ' + b.nom) }}</span>
+                    <div class="personne">
+                      <strong>{{ b.prenom }} {{ b.nom }}</strong>
+                      <span class="muted small">{{ b.email }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="heures">
+                  <div class="row nowrap">
+                    <div class="progress"><span [style.width.%]="progression(b.heures)"></span></div>
+                    <strong>{{ b.heures }}h</strong>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge" [class.badge-warning]="b.nb_indisponibilites > 20">{{ b.nb_indisponibilites }}</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="3" class="empty">Aucun bénévole trouvé.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2><app-icon name="megaphone" [size]="16" /> Annonces</h2>
+      </div>
+
+      <form (ngSubmit)="publier()" class="annonce-form">
+        <div class="field">
+          <label for="titre">Titre</label>
+          <input id="titre" name="titre" [(ngModel)]="nouvelleAnnonce.titre" maxlength="200" placeholder="Ex. Réunion d’équipe" required />
+        </div>
+        <div class="field">
+          <label for="contenu">Message</label>
+          <textarea id="contenu" name="contenu" rows="3" [(ngModel)]="nouvelleAnnonce.contenu" placeholder="Visible sur le tableau de bord de tous les bénévoles" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block"
+                [disabled]="publication || !nouvelleAnnonce.titre.trim() || !nouvelleAnnonce.contenu.trim()">
+          <app-icon name="send" [size]="16" /> Publier
+        </button>
+      </form>
+
+      <ul class="annonces">
+        @for (a of annonces(); track a.id) {
+          <li>
+            <div class="spacer">
+              <strong>{{ a.titre }}</strong>
+              <p>{{ a.contenu }}</p>
+              <span class="muted small">{{ a.auteur_nom }} · {{ a.date | date:'d MMM yyyy, HH:mm' }}</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-icon" (click)="supprimer(a)" aria-label="Supprimer">
+              <app-icon name="trash" [size]="16" />
+            </button>
+          </li>
+        } @empty {
+          <li class="muted small">Aucune annonce publiée.</li>
+        }
+      </ul>
+    </section>
+  </div>
+} @else {
+  <div class="grid grid-4 kpis">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="card"><div class="skeleton" style="height: 64px"></div></div>
+    }
+  </div>
+  <div class="card"><div class="skeleton" style="height: 260px"></div></div>
+}

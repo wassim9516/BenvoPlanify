@@ -3,20 +3,20 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 
-import { SaisieComponent } from './saisie.component';
+import { CoordinationComponent } from './coordination.component';
 
-describe('SaisieComponent', () => {
-  let component: SaisieComponent;
-  let fixture: ComponentFixture<SaisieComponent>;
+describe('CoordinationComponent', () => {
+  let component: CoordinationComponent;
+  let fixture: ComponentFixture<CoordinationComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SaisieComponent],
+      imports: [CoordinationComponent],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SaisieComponent);
+    fixture = TestBed.createComponent(CoordinationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

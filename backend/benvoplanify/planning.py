@@ -27,6 +27,29 @@ def construire_emploi_du_temps():
     return emploi_du_temps
 
 
+def occupation_par_creneau():
+    """Retourne {(jour, creneau): nombre de bénévoles affectés}."""
+    return {
+        (row['jour'], row['creneau']): row['total']
+        for row in EmploiDuTemps.objects.values('jour', 'creneau').annotate(total=Count('id'))
+    }
+
+
+def statistiques_couverture():
+    occupation = occupation_par_creneau()
+    nb_creneaux = len(JOURS_IDS) * len(CRENEAUX_IDS)
+    places_total = nb_creneaux * MAX_BENEVOLES_PAR_CRENEAU
+    places_prises = sum(occupation.values())
+    return {
+        'creneaux_total': nb_creneaux,
+        'creneaux_couverts': sum(1 for n in occupation.values() if n > 0),
+        'creneaux_complets': sum(1 for n in occupation.values() if n >= MAX_BENEVOLES_PAR_CRENEAU),
+        'places_total': places_total,
+        'places_prises': places_prises,
+        'taux_remplissage': round(100 * places_prises / places_total),
+    }
+
+
 def _verrouiller_planning():
     if connection.vendor == 'postgresql':
         with connection.cursor() as cursor:
@@ -51,10 +74,7 @@ def enregistrer_indisponibilites_et_generer(benevole, indisponibilites):
     )
 
     EmploiDuTemps.objects.filter(benevole=benevole).delete()
-    occupation = {
-        (row['jour'], row['creneau']): row['total']
-        for row in EmploiDuTemps.objects.values('jour', 'creneau').annotate(total=Count('id'))
-    }
+    occupation = occupation_par_creneau()
 
     candidats = [
         (j, c) for j in JOURS_IDS for c in CRENEAUX_IDS

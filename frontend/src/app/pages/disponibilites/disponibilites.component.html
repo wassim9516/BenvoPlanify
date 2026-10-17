@@ -1,0 +1,112 @@
+<div class="page-header">
+  <div>
+    <h1>Mes disponibilités</h1>
+    <p>Cliquez sur un créneau pour indiquer que vous n’êtes <strong>pas disponible</strong>.</p>
+  </div>
+  <div class="row">
+    <button type="button" class="btn btn-ghost" (click)="toutDisponible()" [disabled]="!indispo().size">Tout disponible</button>
+    <button type="button" class="btn btn-primary" (click)="enregistrer()" [disabled]="enCours() || !charge()">
+      <app-icon name="sparkles" [size]="16" />
+      {{ enCours() ? 'Génération…' : 'Enregistrer et générer le planning' }}
+    </button>
+  </div>
+</div>
+
+@if (modifie()) {
+  <div class="alert alert-warning">
+    <app-icon name="alert" />
+    <span>Modifications non enregistrées : votre planning sera recalculé à l’enregistrement.</span>
+  </div>
+}
+
+<div class="grid layout">
+  <div class="card">
+    <div class="table-wrap">
+      <table class="dispo">
+        <thead>
+          <tr>
+            <th></th>
+            @for (creneau of creneaux; track creneau[0]) {
+              <th>{{ creneau[1] }}</th>
+            }
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (jour of jours; track jour[0]) {
+            <tr>
+              <th class="jour">{{ jour[1] }}</th>
+              @for (creneau of creneaux; track creneau[0]) {
+                <td>
+                  <button type="button" class="cell" [class.off]="estIndispo(jour[0], creneau[0])"
+                          [disabled]="!charge()" (click)="basculer(jour[0], creneau[0])"
+                          [attr.aria-pressed]="estIndispo(jour[0], creneau[0])"
+                          [attr.aria-label]="jour[1] + ' ' + creneau[1]">
+                    <app-icon [name]="estIndispo(jour[0], creneau[0]) ? 'ban' : 'check'" [size]="16" />
+                    <span>{{ estIndispo(jour[0], creneau[0]) ? 'Indispo.' : 'Dispo.' }}</span>
+                  </button>
+                </td>
+              }
+              <td>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="basculerJournee(jour[0])" [disabled]="!charge()">
+                  {{ journeeIndispo(jour[0]) ? 'Libérer' : 'Journée off' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <aside class="stack">
+    <div class="card">
+      <h2>Résumé</h2>
+      <div class="resume-ligne">
+        <span class="muted">Créneaux disponibles</span>
+        <strong>{{ nbDisponibles() }} / 35</strong>
+      </div>
+      <div class="resume-ligne">
+        <span class="muted">Heures possibles</span>
+        <strong>{{ nbDisponibles() * 2 }}h</strong>
+      </div>
+      <div class="resume-ligne">
+        <span class="muted">Objectif hebdomadaire</span>
+        <strong>20h max.</strong>
+      </div>
+      @if (nbDisponibles() < 10) {
+        <p class="alert alert-warning small">Moins de 10 créneaux disponibles : vous ne pourrez pas atteindre 20h.</p>
+      }
+    </div>
+
+    @if (resultat(); as r) {
+      <div class="card resultat">
+        <div class="card-header">
+          <h2>Planning généré</h2>
+          <span class="badge" [class.badge-success]="r.heures >= 20" [class.badge-warning]="r.heures < 20">{{ r.heures }}h</span>
+        </div>
+        @if (r.planning_genere.length) {
+          <ul>
+            @for (c of r.planning_genere; track c.jour + '-' + c.creneau) {
+              <li><app-icon name="check" [size]="14" /> {{ libelleJour(c.jour) }} · {{ libelleCreneau(c.creneau) }}</li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Aucun créneau disponible n’a pu être attribué.</p>
+        }
+        @if (r.heures < 20) {
+          <p class="muted small">Certains créneaux sont déjà complets (3 bénévoles) ou vous êtes indisponible.</p>
+        }
+        <a routerLink="/planning" class="btn btn-secondary btn-block">Voir le planning complet</a>
+      </div>
+    } @else {
+      <div class="card info">
+        <h3><app-icon name="sparkles" [size]="16" /> Comment ça marche ?</h3>
+        <p class="muted small">
+          À l’enregistrement, jusqu’à 10 créneaux (20h) vous sont attribués parmi vos disponibilités,
+          en priorité là où l’équipe manque de monde. Chaque créneau accueille 3 bénévoles au maximum.
+        </p>
+      </div>
+    }
+  </aside>
+</div>

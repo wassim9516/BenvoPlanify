@@ -1,35 +1,61 @@
-<div class="banner">
-  <div class="navbar">
-    <ul>
-      <li><a routerLink="/">Accueil</a></li>
-      <li><a routerLink="/register">S'inscrire</a></li>
-    </ul>
-  </div>
-
-  <div class="content">
-    <h2>Connexion</h2>
-
-    <ul *ngIf="messages.length">
-      <li *ngFor="let message of messages">{{ message }}</li>
-    </ul>
-
-    <div *ngIf="auth.isLoggedIn(); else loginForm">
-      <p>Vous êtes déjà connecté. <a routerLink="/espace-perso" style="color: #fff; text-decoration: underline;">Accéder à votre espace personnel</a></p>
+<div class="auth-page">
+  <aside class="auth-brand">
+    <a routerLink="/" class="brand">
+      <span class="brand-mark"><app-icon name="heart" [size]="18" /></span>
+      Benvoplanify
+    </a>
+    <div>
+      <h2>Bon retour parmi nous !</h2>
+      <ul>
+        <li><app-icon name="check" /> Consultez votre planning de la semaine</li>
+        <li><app-icon name="check" /> Mettez à jour vos disponibilités</li>
+        <li><app-icon name="check" /> Échangez avec l’équipe</li>
+      </ul>
     </div>
+    <span class="small">© Benvoplanify</span>
+  </aside>
 
-    <ng-template #loginForm>
-      <form (ngSubmit)="onSubmit()">
-        <div *ngFor="let field of formFields">
-          <label [for]="field.name">{{ field.label }}</label>
-          <input [type]="field.type" [id]="field.name" [(ngModel)]="field.value" [name]="field.name" required />
+  <main class="auth-main">
+    <div class="auth-card">
+      <h1>Connexion</h1>
+      <p class="lead">Accédez à votre espace bénévole.</p>
+
+      @if (auth.isLoggedIn()) {
+        <div class="alert alert-info">
+          <app-icon name="check" />
+          <span>Vous êtes déjà connecté. <a routerLink="/tableau-de-bord">Accéder à votre espace</a></span>
         </div>
-        <button type="submit" [disabled]="enCours"><span></span>Se connecter</button>
-      </form>
-    </ng-template>
+      }
 
-    <div class="register-link">
-      <p>Pas encore de compte ? <a routerLink="/register">S'inscrire</a></p>
-      <p><a routerLink="/">Retour à l'accueil</a></p>
+      @if (messages.length) {
+        <div class="alert alert-danger" role="alert">
+          <app-icon name="alert" />
+          <div>
+            @for (message of messages; track message) {
+              <div>{{ message }}</div>
+            }
+          </div>
+        </div>
+      }
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="field">
+          <label for="email">Adresse email</label>
+          <input id="email" name="email" type="email" [(ngModel)]="email" placeholder="vous@exemple.fr" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="password">Mot de passe</label>
+          <input id="password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="enCours || !email || !password">
+          {{ enCours ? 'Connexion…' : 'Se connecter' }}
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Pas encore de compte ? <a routerLink="/register">Créer un compte</a>
+      </p>
+      <p class="auth-switch"><a routerLink="/">← Retour à l’accueil</a></p>
     </div>
-  </div>
+  </main>
 </div>

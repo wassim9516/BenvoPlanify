@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Benevole, CustomUser, EmploiDuTemps, Indisponibilite, Message
+from .models import Annonce, Benevole, CustomUser, EmploiDuTemps, Indisponibilite, Message
 
 
 @admin.register(CustomUser)
@@ -33,3 +33,8 @@ class CreneauAdmin(admin.ModelAdmin):
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ['sender', 'receiver', 'timestamp', 'is_read']
+
+
+@admin.register(Annonce)
+class AnnonceAdmin(admin.ModelAdmin):
+    list_display = ['titre', 'auteur', 'date']

@@ -1,40 +1,80 @@
-<div class="banner">
-    <div class="navbar">
-      <ul>
-        <li><a routerLink="/">Accueil</a></li>
-        <li><a routerLink="/espace-perso">Espace Personnel</a></li>
-        <li><a routerLink="/saisie">Saisie</a></li>
-        <li><a routerLink="/" (click)="logout()">Déconnexion</a></li>
-      </ul>
-    </div>
-    <div class="content">
-      <h2>Emploi du Temps</h2>
-      <p *ngFor="let message of messages" class="erreur">{{ message }}</p>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Jour</th>
-              <th *ngFor="let creneau of creneaux">{{ creneau[1] }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let jour of jours">
-              <td>{{ jour[1] }}</td>
-              <td *ngFor="let creneau of creneaux">
-                <ul *ngIf="benevoles(jour[0], creneau[0]).length; else vide">
-                  <li *ngFor="let nom of benevoles(jour[0], creneau[0])" [class.moi]="nom === moi">{{ nom }}</li>
-                </ul>
-                <ng-template #vide><span class="vide">Aucun bénévole</span></ng-template>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="back-link">
-        <p><a routerLink="/espace-perso">Retour à l'espace personnel</a></p>
-      </div>
-    </div>
+<div class="page-header">
+  <div>
+    <h1>Planning de la semaine</h1>
+    <p>{{ mesCreneaux().length }} créneaux vous sont attribués, soit {{ mesCreneaux().length * 2 }}h.</p>
   </div>
+  <div class="row">
+    <div class="segmented" role="tablist">
+      <button type="button" [class.active]="vue() === 'tous'" (click)="vue.set('tous')">Toute l’équipe</button>
+      <button type="button" [class.active]="vue() === 'moi'" (click)="vue.set('moi')">Mes créneaux</button>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="exporterIcs()">
+      <app-icon name="download" [size]="16" /> Exporter (.ics)
+    </button>
+  </div>
+</div>
+
+@if (erreur()) {
+  <div class="alert alert-danger"><app-icon name="alert" /> {{ erreur() }}</div>
+}
+
+<div class="card planning-card">
+  <div class="legende">
+    <span><i class="pastille vide"></i> Aucun bénévole</span>
+    <span><i class="pastille partiel"></i> Partiellement couvert</span>
+    <span><i class="pastille complet"></i> Complet ({{ max }}/{{ max }})</span>
+    <span><i class="pastille moi"></i> Vous y êtes</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="planning">
+      <thead>
+        <tr>
+          <th class="col-heure"></th>
+          @for (jour of jours; track jour[0]) {
+            <th [class.today]="jour[0] === aujourdHui">
+              {{ jour[1] }}
+              @if (jour[0] === aujourdHui) { <span class="badge badge-primary">Auj.</span> }
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (creneau of creneaux; track creneau[0]) {
+          <tr>
+            <th class="col-heure">{{ creneau[1] }}</th>
+            @for (jour of jours; track jour[0]) {
+              <td [class.today]="jour[0] === aujourdHui">
+                @if (!emploiDuTemps()) {
+                  <div class="skeleton cell-skeleton"></div>
+                } @else if (vue() === 'moi') {
+                  @if (estMoi(jour[0], creneau[0])) {
+                    <div class="slot moi">
+                      <strong>Vous</strong>
+                      <span>{{ benevoles(jour[0], creneau[0]).length }}/{{ max }} bénévoles</span>
+                    </div>
+                  }
+                } @else {
+                  <div class="slot" [class]="'slot ' + niveau(jour[0], creneau[0])" [class.moi]="estMoi(jour[0], creneau[0])">
+                    <span class="count">{{ benevoles(jour[0], creneau[0]).length }}/{{ max }}</span>
+                    @for (nom of benevoles(jour[0], creneau[0]); track nom) {
+                      <span class="person" [class.me]="nom === moi()">{{ nom }}</span>
+                    }
+                  </div>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (emploiDuTemps() && vue() === 'moi' && !mesCreneaux().length) {
+    <div class="empty">
+      <app-icon name="calendar" [size]="36" />
+      <p>Vous n’avez pas encore de créneau.</p>
+      <a routerLink="/disponibilites" class="btn btn-primary btn-sm">Renseigner mes disponibilités</a>
+    </div>
+  }
+</div>
