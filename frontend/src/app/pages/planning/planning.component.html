@@ -1,0 +1,40 @@
+<div class="banner">
+    <div class="navbar">
+      <ul>
+        <li><a routerLink="/">Accueil</a></li>
+        <li><a routerLink="/espace-perso">Espace Personnel</a></li>
+        <li><a routerLink="/saisie">Saisie</a></li>
+        <li><a routerLink="/" (click)="logout()">Déconnexion</a></li>
+      </ul>
+    </div>
+    <div class="content">
+      <h2>Emploi du Temps</h2>
+      <p *ngFor="let message of messages" class="erreur">{{ message }}</p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Jour</th>
+              <th *ngFor="let creneau of creneaux">{{ creneau[1] }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let jour of jours">
+              <td>{{ jour[1] }}</td>
+              <td *ngFor="let creneau of creneaux">
+                <ul *ngIf="benevoles(jour[0], creneau[0]).length; else vide">
+                  <li *ngFor="let nom of benevoles(jour[0], creneau[0])" [class.moi]="nom === moi">{{ nom }}</li>
+                </ul>
+                <ng-template #vide><span class="vide">Aucun bénévole</span></ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="back-link">
+        <p><a routerLink="/espace-perso">Retour à l'espace personnel</a></p>
+      </div>
+    </div>
+  </div>

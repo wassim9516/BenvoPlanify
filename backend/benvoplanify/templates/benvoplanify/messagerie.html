@@ -1,0 +1,211 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messagerie</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .banner {
+      width: 100%;
+      min-height: 100vh;
+      background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('{% static "image/letter.jpg" %}');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .navbar {
+      width: 85%;
+      margin: auto;
+      padding: 35px 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .navbar ul li {
+      list-style: none;
+      display: inline-block;
+      margin: 0 20px;
+      position: relative;
+    }
+
+    .navbar ul li a {
+      text-decoration: none;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .navbar ul li::after {
+      content: '';
+      height: 3px;
+      width: 0;
+      background: #009688;
+      position: absolute;
+      left: 0;
+      bottom: -10px;
+      transition: 0.5s;
+    }
+
+    .navbar ul li:hover::after {
+      width: 100%;
+    }
+
+    .content {
+      width: 50%;
+      margin: 0 auto;
+      padding-bottom: 40px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .content h1 {
+      font-size: 30px;
+      margin-top: 50px;
+      animation: fadeIn 1s ease-in-out;
+      animation-delay: 0.5s;
+      animation-fill-mode: both;
+    }
+
+    .content h2 {
+      font-size: 2rem;
+      margin-top: 20px;
+      animation: fadeIn 1s ease-in-out;
+      animation-delay: 1s;
+      animation-fill-mode: both;
+    }
+
+    .content p {
+      margin: 20px auto;
+      font-weight: 100;
+      line-height: 25px;
+      animation: fadeIn 1s ease-in-out;
+      animation-delay: 1.5s;
+      animation-fill-mode: both;
+    }
+
+    .messages {
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .message {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .message.unread {
+      font-weight: bold;
+    }
+
+    .message.detail {
+      background: rgba(0, 150, 136, 0.35);
+    }
+
+    .notif {
+      color: #80cbc4;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      resize: none;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 30px;
+      background-color: #009688;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00796b;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <div class="navbar">
+      <ul>
+        <li><a href="{% url 'messagerie' %}">Messagerie</a></li>
+        <li><a href="{% url 'logout' %}">Déconnexion</a></li>
+        <li><a href="{% url 'espace_perso' %}">Espace Personnel</a></li>
+      </ul>
+    </div>
+    <div class="content">
+      <h1>Messagerie</h1>
+
+      {% if messages %}
+        {% for notif in messages %}
+          <p class="notif">{{ notif }}</p>
+        {% endfor %}
+      {% endif %}
+
+      {% if message_detail %}
+        <div class="message detail">
+          <p><strong>De :</strong> {{ message_detail.sender.email }}</p>
+          <p><strong>Envoyé le :</strong> {{ message_detail.timestamp }}</p>
+          <p>{{ message_detail.content|linebreaksbr }}</p>
+          <a href="{% url 'messagerie' %}" style="color: #ffffff; text-decoration: underline;">Fermer</a>
+        </div>
+      {% endif %}
+
+      <!-- Messages reçus -->
+      <div class="messages">
+        <h2>Messages reçus</h2>
+        {% for message in messages_recus %}
+          <div class="message {% if not message.is_read %}unread{% endif %}">
+            <p><strong>De :</strong> {{ message.sender.email }}</p>
+            <p><strong>Envoyé le :</strong> {{ message.timestamp }}</p>
+            <p>{{ message.content|truncatewords:20 }}</p>
+            <a href="{% url 'messagerie_detail' message.id %}" style="color: #ffffff; text-decoration: underline;">Voir le message</a>
+          </div>
+        {% empty %}
+          <p>Aucun message reçu.</p>
+        {% endfor %}
+      </div>
+
+      <!-- Formulaire pour envoyer un message -->
+      <form method="post">
+        {% csrf_token %}
+        <h2>Envoyer un nouveau message</h2>
+        {{ form.as_p }}
+        <button type="submit">Envoyer</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,140 @@
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emploi du Temps</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            font-family: 'Arial', sans-serif;
+            color: #483491;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color:  #ece6f3;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        a {
+            display: block;
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 20px;
+
+        }
+        
+        h3 {
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 20px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        td {
+            background-color: #ecf0f1;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f9fafb;
+        }
+
+        tr:hover td {
+            background-color: #dbe5e7;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: left;
+        }
+
+        ul li {
+            background-color: #3498db;
+            color: white;
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .no-benevole {
+            font-style: italic;
+            color: #e74c3c;
+            text-align: center;
+        }
+        
+        .table-container {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Emploi du Temps</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jour</th>
+                        {% for creneau_id, creneau_nom in creneaux %}
+                        <th>{{ creneau_nom }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                        {% for jour_id, jour_nom in jours %}
+                            <tr>
+                                <td>{{ jour_nom }}</td>
+                                {% for creneau_id, creneau_nom in creneaux %}
+                                    <td>
+                                        {% with benevoles=emploi_du_temps|dict_get:jour_id|dict_get:creneau_id %}
+                                        {% if benevoles %}
+                                            <ul>
+                                                {% for benevole in benevoles %}
+                                                    <li>{{ benevole }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <p class="no-benevole">Aucun bénévole</p>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'espace_perso' %}">Retour</a>
+    </div>
+</body>
+</html>

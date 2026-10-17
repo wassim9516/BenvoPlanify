@@ -1,0 +1,161 @@
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Indisponibilités</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f9f9f9;
+      padding: 30px;
+      color: #333;
+    }
+
+    h2, h3 {
+      color: #2c3e50;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      margin-bottom: 30px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .day-header {
+      background-color: #ecf0f1;
+      padding: 10px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+
+    .checkbox-group {
+      margin-bottom: 10px;
+    }
+
+    .toute-journee-label {
+      font-weight: bold;
+      color: #e74c3c;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #27ae60;
+    }
+
+    .messages {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .messages li {
+      background-color: #f39c12;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      color: white;
+    }
+
+    .success {
+      background-color: #2ecc71;
+    }
+
+    .error {
+      background-color: #e74c3c;
+    }
+
+    .warning {
+      background-color: #f1c40f;
+    }
+  </style>
+</head>
+<body>
+
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<p><a href="{% url 'espace_perso' %}">← Retour à l'espace personnel</a></p>
+<h2>Indiquez vos indisponibilités</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% for jour in jours %}
+    <div class="day-header">
+      <label class="toute-journee-label">
+        <input type="checkbox" name="jour_{{ jour.0 }}_toute_journee">
+        Indisponible toute la journée du {{ jour.1 }}
+      </label>
+
+      <div class="checkbox-group">
+        {% for creneau in creneaux %}
+          <label>
+            {% est_indispo indispo jour.0 creneau.0 as coche %}
+            <input type="checkbox" name="{{ jour.0 }}_{{ creneau.0 }}"{% if coche %} checked{% endif %}>
+            {{ creneau.1 }}
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+
+  <button type="submit">Enregistrer et générer le planning</button>
+</form>
+
+{% if planning_genere %}
+  <h3>Créneaux attribués :</h3>
+  <h4><a href="{% url 'emploi_du_temps_view' %}">Voir le planning complet 🗓️</a></h4>
+  <ul>
+    {% for jour, creneau in planning_genere %}
+      <li>{{ jours|choice_label:jour }} — {{ creneaux|choice_label:creneau }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if heures is not None and heures < 20 %}
+  <p style="color: red;">⚠️ Seulement {{ heures }} heures ont pu être attribuées. Il reste des créneaux à combler.</p>
+{% endif %}
+
+</body>
+</html>

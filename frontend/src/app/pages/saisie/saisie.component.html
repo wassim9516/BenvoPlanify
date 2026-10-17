@@ -1,0 +1,43 @@
+<div class="banner">
+    <div class="navbar">
+      <ul>
+        <li><a routerLink="/">Accueil</a></li>
+        <li><a routerLink="/espace-perso">Espace Personnel</a></li>
+        <li><a routerLink="/" (click)="logout()">Déconnexion</a></li>
+      </ul>
+    </div>
+    <div class="content">
+      <h2>Saisie des Contraintes</h2>
+      <p>Cochez les créneaux où vous êtes <strong>indisponible</strong>.</p>
+      <p *ngFor="let message of messages" class="erreur">{{ message }}</p>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="jour" *ngFor="let jour of jours">
+          <label class="toute-journee">
+            <input type="checkbox" [checked]="journeeEntiere(jour[0])" (change)="basculerJournee(jour[0], $any($event.target).checked)" />
+            {{ jour[1] }} — toute la journée
+          </label>
+          <div class="creneaux">
+            <label *ngFor="let creneau of creneaux">
+              <input type="checkbox" [(ngModel)]="indispo[cle(jour[0], creneau[0])]" [name]="cle(jour[0], creneau[0])" />
+              {{ creneau[1] }}
+            </label>
+          </div>
+        </div>
+        <button type="submit" [disabled]="enCours"><span></span>Enregistrer et générer le planning</button>
+      </form>
+
+      <div class="resultat" *ngIf="planningGenere">
+        <h3>Créneaux attribués ({{ heures }}h)</h3>
+        <ul>
+          <li *ngFor="let c of planningGenere">{{ libelleJour(c.jour) }} — {{ libelleCreneau(c.creneau) }}</li>
+        </ul>
+        <p *ngIf="heures < 20" class="erreur">⚠️ Seulement {{ heures }} heures ont pu être attribuées.</p>
+        <p><a routerLink="/planning">Voir le planning complet</a></p>
+      </div>
+
+      <div class="back-link">
+        <p><a routerLink="/espace-perso">Retour à l'espace personnel</a></p>
+      </div>
+    </div>
+  </div>

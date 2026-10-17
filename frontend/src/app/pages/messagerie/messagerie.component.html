@@ -1,0 +1,35 @@
+<div class="banner">
+    <div class="navbar">
+      <ul>
+        <li><a routerLink="/">Accueil</a></li>
+        <li><a routerLink="/espace-perso">Espace Personnel</a></li>
+        <li><a routerLink="/" (click)="logout()">Déconnexion</a></li>
+      </ul>
+    </div>
+    <div class="content">
+      <h2>Messagerie</h2>
+      <p *ngFor="let info of infos" class="info">{{ info }}</p>
+
+      <div class="message detail" *ngIf="messageOuvert">
+        <p><strong>De :</strong> {{ messageOuvert.sender_email }} — {{ messageOuvert.timestamp | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p class="texte">{{ messageOuvert.content }}</p>
+        <a href="" (click)="$event.preventDefault(); messageOuvert = null">Fermer</a>
+      </div>
+
+      <div class="messages">
+        <p *ngIf="!messages.length">Aucun message reçu.</p>
+        <div *ngFor="let message of messages" class="message" [class.unread]="!message.is_read" (click)="ouvrir(message)">
+          <p><strong>{{ message.sender_email }}</strong> ({{ message.timestamp | date:'dd/MM/yyyy HH:mm' }}) : {{ message.content | slice:0:80 }}</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="sendMessage()">
+        <select [(ngModel)]="destinataire" name="destinataire" required>
+          <option [ngValue]="null" disabled>Choisir un destinataire</option>
+          <option *ngFor="let b of benevoles" [ngValue]="b.user">{{ b.prenom }} {{ b.nom }}</option>
+        </select>
+        <textarea [(ngModel)]="newMessage" name="newMessage" placeholder="Écrivez votre message ici..." required></textarea>
+        <button type="submit" [disabled]="destinataire === null || !newMessage.trim()"><span></span>Envoyer</button>
+      </form>
+    </div>
+  </div>

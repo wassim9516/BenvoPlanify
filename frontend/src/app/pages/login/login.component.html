@@ -1,0 +1,35 @@
+<div class="banner">
+  <div class="navbar">
+    <ul>
+      <li><a routerLink="/">Accueil</a></li>
+      <li><a routerLink="/register">S'inscrire</a></li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <h2>Connexion</h2>
+
+    <ul *ngIf="messages.length">
+      <li *ngFor="let message of messages">{{ message }}</li>
+    </ul>
+
+    <div *ngIf="auth.isLoggedIn(); else loginForm">
+      <p>Vous êtes déjà connecté. <a routerLink="/espace-perso" style="color: #fff; text-decoration: underline;">Accéder à votre espace personnel</a></p>
+    </div>
+
+    <ng-template #loginForm>
+      <form (ngSubmit)="onSubmit()">
+        <div *ngFor="let field of formFields">
+          <label [for]="field.name">{{ field.label }}</label>
+          <input [type]="field.type" [id]="field.name" [(ngModel)]="field.value" [name]="field.name" required />
+        </div>
+        <button type="submit" [disabled]="enCours"><span></span>Se connecter</button>
+      </form>
+    </ng-template>
+
+    <div class="register-link">
+      <p>Pas encore de compte ? <a routerLink="/register">S'inscrire</a></p>
+      <p><a routerLink="/">Retour à l'accueil</a></p>
+    </div>
+  </div>
+</div>

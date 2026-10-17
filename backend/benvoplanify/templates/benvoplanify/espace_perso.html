@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Espace Personnel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo {
+      position: absolute;
+      top: 90px;
+      left: 20px;
+      height: 80px;  /* Petite taille */
+      width: auto;
+      border-radius: 30%;
+    }
+
+    header {
+       display: flex;
+       justify-content: space-between; /* Gère gauche/droite */
+       align-items: center;
+       padding: 20px 40px;
+       width: 100%; /* <-- Très important */
+       background-color: rgba(255, 255, 255, 0.05);
+    }  
+
+
+    .menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 16px;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .menu a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    .left-text {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+    }
+
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+    }
+
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+
+
+  </style>
+</head>
+<body>
+  <img src="{% static 'image/logo.jpeg' %}" alt="Logo" class="logo">
+
+  <header>
+    <div class="left-text">{{ benevole.prenom }} {{ benevole.nom }}</div>
+    <nav class="menu">
+      <a href="{% url 'modif_benev' %}">Mes infos</a>
+      <a href="{% url 'logout' %}">Déconnexion</a>
+      <a href="{% url 'messagerie' %}">Messagerie</a>
+      <a href="{% url 'indisponibilite_view' %}">Saisie</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Bienvenue sur votre espace personnel<br><br>
+      <a href="{% url 'emploi_du_temps_view' %}">Planning</a></h1>
+  </main>
+
+</body>
+</html>
+

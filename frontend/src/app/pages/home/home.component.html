@@ -1,0 +1,23 @@
+<div class="banner">
+  <div class="navbar">
+    <ul>
+      <li><a routerLink="/espace-perso">Espace Personnel</a></li>
+      <li><a routerLink="/login">Login</a></li>
+      <li><a routerLink="/register">S'inscrire</a></li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <h1>Bienvenue sur <span class="orange"><br>Benvoplanify</span></h1>
+    <div>
+      <br><br><br>
+      <button *ngIf="auth.isLoggedIn()" class="btn login" routerLink="/espace-perso">Mon espace</button>
+      <ng-container *ngIf="!auth.isLoggedIn()">
+        <button class="btn login" routerLink="/login">Login</button>
+        <button class="btn register" routerLink="/register">S'inscrire</button>
+      </ng-container>
+      <p>Organisez votre semaine facilement et efficacement.</p>
+      <p *ngIf="nbBenevoles !== null">Nombre de bénévoles actifs : {{ nbBenevoles }}</p>
+    </div>
+  </div>
+</div>

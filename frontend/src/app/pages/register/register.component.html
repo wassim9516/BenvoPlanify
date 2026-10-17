@@ -1,0 +1,25 @@
+<div class="banner">
+    <div class="navbar">
+      <ul>
+        <li><a routerLink="/">Accueil</a></li>
+        <li><a routerLink="/login">Se connecter</a></li>
+      </ul>
+    </div>
+    <div class="content">
+      <h2>Inscription</h2>
+      <ul *ngIf="messages.length">
+        <li *ngFor="let message of messages">{{ message }}</li>
+      </ul>
+      <form (ngSubmit)="onSubmit()">
+        <div *ngFor="let field of formFields">
+          <label [for]="field.name">{{ field.label }}</label>
+          <input [type]="field.type" [id]="field.name" [(ngModel)]="field.value" [name]="field.name" required />
+        </div>
+        <button type="submit" [disabled]="enCours"><span></span>S'inscrire</button>
+      </form>
+      <div class="login-link">
+        <p>Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
+        <p><a routerLink="/">Retour à l'accueil</a></p>
+      </div>
+    </div>
+  </div>
